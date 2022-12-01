@@ -1,24 +1,16 @@
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut max_value: u32 = 0;
-    input.split("\n\n").for_each(|set| {
-        let set_value = match set
-            .lines()
-            .map(|line| match line.parse::<u32>() {
-                Ok(v) => v,
-                _ => 0,
+    Some(
+        input
+            .split("\n\n")
+            .map(|set| {
+                set.lines()
+                    .map(|line| line.parse::<u32>().unwrap_or(0))
+                    .reduce(|accum, line| accum + line)
+                    .unwrap_or(0)
             })
-            .reduce(|accum, line| accum + line)
-        {
-            Some(v) => v,
-            _ => 0,
-        };
-
-        if set_value > max_value {
-            max_value = set_value
-        }
-    });
-
-    Some(max_value)
+            .max()
+            .unwrap_or(0),
+    )
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
