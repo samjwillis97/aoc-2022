@@ -1,39 +1,33 @@
+use regex::Regex;
 use std::collections::HashSet;
 
 // Solves down to 1.4ms, lots of room to improve I think
 // using the parse_line function was taking around 3.55ms
+// Initial Regex solve takes 3ms
 
 // Just realising now that I should try this with a regex instead lol
 pub fn part_one(input: &str) -> Option<u32> {
     let mut first_set = HashSet::new();
     let mut second_set = HashSet::new();
 
+    let re = Regex::new(r"(\d+)-(\d+),(\d+)-(\d+)").unwrap();
     Some(
-        input
-            .lines()
-            .map(|line| {
-                let mut splitted = line.split(",");
-                return (splitted.next().unwrap(), splitted.next().unwrap());
-            })
-            .map(|pair_string| {
-                let mut first_pair = pair_string.0.split("-");
-                let mut second_pair = pair_string.1.split("-");
-                return (
-                    first_pair.next().unwrap().parse::<u32>().unwrap()
-                        ..first_pair.next().unwrap().parse::<u32>().unwrap() + 1,
-                    second_pair.next().unwrap().parse::<u32>().unwrap()
-                        ..second_pair.next().unwrap().parse::<u32>().unwrap() + 1,
-                );
-            })
-            .map(|ranges| {
+        re.captures_iter(input)
+            .map(|capture| {
                 first_set.clear();
                 second_set.clear();
-                ranges.0.for_each(|value| {
-                    first_set.insert(value);
-                });
-                ranges.1.for_each(|value| {
-                    second_set.insert(value);
-                });
+                (capture.get(1).unwrap().as_str().parse::<u32>().unwrap()
+                    ..capture.get(2).unwrap().as_str().parse::<u32>().unwrap())
+                    .for_each(|section| {
+                        first_set.insert(section);
+                    });
+
+                (capture.get(3).unwrap().as_str().parse::<u32>().unwrap()
+                    ..capture.get(4).unwrap().as_str().parse::<u32>().unwrap())
+                    .for_each(|section| {
+                        second_set.insert(section);
+                    });
+
                 return first_set.is_superset(&second_set) || second_set.is_superset(&first_set);
             })
             .filter(|value| *value)
@@ -41,6 +35,46 @@ pub fn part_one(input: &str) -> Option<u32> {
             .try_into()
             .unwrap(),
     )
+
+    // Some(
+    //     input
+    //         .lines()
+    //         .map(|line| {
+    //             let mut splitted = line.split(",");
+    //             let re = Regex::new(r"(\d+)-(\d+),(\d+)-(\d+)").unwrap();
+    //             let capture = re.captures(line);
+
+    //             for cap in re.captures_iter(line) {
+    //                 cap.get(1).map(|v| v.as_str().parse::<u32>());
+    //             }
+    //             return (splitted.next().unwrap(), splitted.next().unwrap());
+    //         })
+    //         .map(|pair_string| {
+    //             let mut first_pair = pair_string.0.split("-");
+    //             let mut second_pair = pair_string.1.split("-");
+    //             return (
+    //                 first_pair.next().unwrap().parse::<u32>().unwrap()
+    //                     ..first_pair.next().unwrap().parse::<u32>().unwrap() + 1,
+    //                 second_pair.next().unwrap().parse::<u32>().unwrap()
+    //                     ..second_pair.next().unwrap().parse::<u32>().unwrap() + 1,
+    //             );
+    //         })
+    //         .map(|ranges| {
+    //             first_set.clear();
+    //             second_set.clear();
+    //             ranges.0.for_each(|value| {
+    //                 first_set.insert(value);
+    //             });
+    //             ranges.1.for_each(|value| {
+    //                 second_set.insert(value);
+    //             });
+    //             return first_set.is_superset(&second_set) || second_set.is_superset(&first_set);
+    //         })
+    //         .filter(|value| *value)
+    //         .count()
+    //         .try_into()
+    //         .unwrap(),
+    // )
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
