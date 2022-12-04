@@ -3,6 +3,7 @@ use std::collections::HashSet;
 // Solves down to 1.4ms, lots of room to improve I think
 // using the parse_line function was taking around 3.55ms
 
+// Just realising now that I should try this with a regex instead lol
 pub fn part_one(input: &str) -> Option<u32> {
     let mut first_set = HashSet::new();
     let mut second_set = HashSet::new();
