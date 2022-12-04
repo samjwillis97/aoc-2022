@@ -1,5 +1,4 @@
 use regex::Regex;
-use std::collections::HashSet;
 
 // Solves down to 1.4ms, lots of room to improve I think
 // using the parse_line function was taking around 3.55ms
