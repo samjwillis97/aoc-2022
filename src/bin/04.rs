@@ -4,143 +4,53 @@ use std::collections::HashSet;
 // Solves down to 1.4ms, lots of room to improve I think
 // using the parse_line function was taking around 3.55ms
 // Initial Regex solve takes 3ms
+// Reading through solutions realised i missed the obvious one...
+// don't need to create ranges at all.
+// first non range/set solution 1.5ms
+// second, iterating with lines rather than regex captures, 1.5 -> 1ms
+// interestingly part2 solves in 540us
 
 // Just realising now that I should try this with a regex instead lol
 pub fn part_one(input: &str) -> Option<u32> {
-    let mut first_set = HashSet::new();
-    let mut second_set = HashSet::new();
-
+    let mut counter: u32 = 0;
     let re = Regex::new(r"(\d+)-(\d+),(\d+)-(\d+)").unwrap();
-    Some(
-        re.captures_iter(input)
-            .map(|capture| {
-                first_set.clear();
-                second_set.clear();
-                (capture.get(1).unwrap().as_str().parse::<u32>().unwrap()
-                    ..capture.get(2).unwrap().as_str().parse::<u32>().unwrap())
-                    .for_each(|section| {
-                        first_set.insert(section);
-                    });
 
-                (capture.get(3).unwrap().as_str().parse::<u32>().unwrap()
-                    ..capture.get(4).unwrap().as_str().parse::<u32>().unwrap())
-                    .for_each(|section| {
-                        second_set.insert(section);
-                    });
+    input.lines().for_each(|line| {
+        let capture = re.captures(line).unwrap();
 
-                return first_set.is_superset(&second_set) || second_set.is_superset(&first_set);
-            })
-            .filter(|value| *value)
-            .count()
-            .try_into()
-            .unwrap(),
-    )
+        let first_value = capture.get(1).unwrap().as_str().parse::<u32>().unwrap();
+        let second_value = capture.get(2).unwrap().as_str().parse::<u32>().unwrap();
+        let third_value = capture.get(3).unwrap().as_str().parse::<u32>().unwrap();
+        let fourth_value = capture.get(4).unwrap().as_str().parse::<u32>().unwrap();
+        if (first_value >= third_value && second_value <= fourth_value)
+            || (third_value >= first_value && fourth_value <= second_value)
+        {
+            counter = counter + 1;
+        }
+    });
 
-    // Some(
-    //     input
-    //         .lines()
-    //         .map(|line| {
-    //             let mut splitted = line.split(",");
-    //             let re = Regex::new(r"(\d+)-(\d+),(\d+)-(\d+)").unwrap();
-    //             let capture = re.captures(line);
-
-    //             for cap in re.captures_iter(line) {
-    //                 cap.get(1).map(|v| v.as_str().parse::<u32>());
-    //             }
-    //             return (splitted.next().unwrap(), splitted.next().unwrap());
-    //         })
-    //         .map(|pair_string| {
-    //             let mut first_pair = pair_string.0.split("-");
-    //             let mut second_pair = pair_string.1.split("-");
-    //             return (
-    //                 first_pair.next().unwrap().parse::<u32>().unwrap()
-    //                     ..first_pair.next().unwrap().parse::<u32>().unwrap() + 1,
-    //                 second_pair.next().unwrap().parse::<u32>().unwrap()
-    //                     ..second_pair.next().unwrap().parse::<u32>().unwrap() + 1,
-    //             );
-    //         })
-    //         .map(|ranges| {
-    //             first_set.clear();
-    //             second_set.clear();
-    //             ranges.0.for_each(|value| {
-    //                 first_set.insert(value);
-    //             });
-    //             ranges.1.for_each(|value| {
-    //                 second_set.insert(value);
-    //             });
-    //             return first_set.is_superset(&second_set) || second_set.is_superset(&first_set);
-    //         })
-    //         .filter(|value| *value)
-    //         .count()
-    //         .try_into()
-    //         .unwrap(),
-    // )
+    Some(counter)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let mut first_set = HashSet::new();
-    let mut second_set = HashSet::new();
+    let mut counter: u32 = 0;
+    let re = Regex::new(r"(\d+)-(\d+),(\d+)-(\d+)").unwrap();
 
-    Some(
-        input
-            .lines()
-            .map(|line| {
-                let mut splitted = line.split(",");
-                return (splitted.next().unwrap(), splitted.next().unwrap());
-            })
-            .map(|pair_string| {
-                let mut first_pair = pair_string.0.split("-");
-                let mut second_pair = pair_string.1.split("-");
-                return (
-                    first_pair.next().unwrap().parse::<u32>().unwrap()
-                        ..first_pair.next().unwrap().parse::<u32>().unwrap() + 1,
-                    second_pair.next().unwrap().parse::<u32>().unwrap()
-                        ..second_pair.next().unwrap().parse::<u32>().unwrap() + 1,
-                );
-            })
-            .map(|ranges| {
-                first_set.clear();
-                second_set.clear();
-                ranges.0.for_each(|value| {
-                    first_set.insert(value);
-                });
-                ranges.1.for_each(|value| {
-                    second_set.insert(value);
-                });
-                return first_set.intersection(&second_set).count() > 0;
-            })
-            .filter(|value| *value)
-            .count()
-            .try_into()
-            .unwrap(),
-    )
-}
+    input.lines().for_each(|line| {
+        let capture = re.captures(line).unwrap();
 
-fn parse_line(input: &str) -> (HashSet<u32>, HashSet<u32>) {
-    let mut first_set = HashSet::new();
-    let mut second_set = HashSet::new();
-
-    let mut output = input.split(",").flat_map(|sections| {
-        return sections.split("-").map(|bounds| {
-            return bounds.parse::<u32>().unwrap();
-        });
+        let first_value = capture.get(1).unwrap().as_str().parse::<u32>().unwrap();
+        let second_value = capture.get(2).unwrap().as_str().parse::<u32>().unwrap();
+        let third_value = capture.get(3).unwrap().as_str().parse::<u32>().unwrap();
+        let fourth_value = capture.get(4).unwrap().as_str().parse::<u32>().unwrap();
+        if second_value >= third_value && first_value <= fourth_value
+            || fourth_value >= first_value && third_value <= second_value
+        {
+            counter = counter + 1;
+        }
     });
 
-    // TODO: Look at using chunks or something for this processing
-    let first_value = output.next().unwrap();
-    let second_value = output.next().unwrap() + 1;
-    let third_value = output.next().unwrap();
-    let fourth_value = output.next().unwrap() + 1;
-
-    (first_value..second_value).for_each(|v| {
-        first_set.insert(v);
-    });
-
-    (third_value..fourth_value).for_each(|v| {
-        second_set.insert(v);
-    });
-
-    return (first_set, second_set);
+    Some(counter)
 }
 
 fn main() {
