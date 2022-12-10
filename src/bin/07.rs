@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use itertools::Itertools;
-
+// TODO: Would be nice to come back to this day..
 pub fn part_one(input: &str) -> Option<u32> {
     let mut file_system = Directory {
         files: HashMap::new(),
@@ -44,36 +43,33 @@ pub fn part_one(input: &str) -> Option<u32> {
 
                 if line[0] != "dir" {
                     let size = line[0].parse::<u32>().unwrap();
-                    previous_dir.files.insert(line[1].to_string(), size);
-                    previous_dir.total_file_size = previous_dir.total_file_size + size;
+                    match previous_dir.files.insert(line[1].to_string(), size) {
+                        None => previous_dir.total_file_size = previous_dir.total_file_size + size,
+                        _ => (),
+                    }
                 }
             }
         }
     });
 
-    println!("{:?}", file_system.directories.get("/").unwrap());
     let dir_sizes = recurse_get_size(file_system.directories.get("/").unwrap());
-    println!("{:?}", dir_sizes);
-    // Some(dir_sizes.iter().filter(|size| *size <= &100000).sum())
-    None
+    Some(dir_sizes.iter().filter(|size| *size <= &100000).sum())
 }
 
 fn recurse_get_size(dir: &Directory) -> Vec<u32> {
     let mut sizes: Vec<u32> = Vec::new();
     if dir.directories.len() == 0 {
         sizes.push(dir.total_file_size);
-        println!("no sub: {}", dir.total_file_size);
         return sizes;
     }
 
-    for ele in dir.directories.values() {
-        sizes.append(&mut recurse_get_size(ele));
+    let mut current_sub_sizes: u32 = 0;
+    for ele in &dir.directories {
+        let mut sub_size = recurse_get_size(ele.1);
+        sizes.append(&mut sub_size);
+        current_sub_sizes = current_sub_sizes + *sizes.last().unwrap_or(&0);
     }
 
-    let current_sub_sizes: u32 = sizes.iter().sum();
-    println!("sub: {}", current_sub_sizes);
-    println!("current: {}", dir.total_file_size);
-    println!("sum: {}", dir.total_file_size + current_sub_sizes);
     sizes.push(dir.total_file_size + current_sub_sizes);
 
     return sizes;
@@ -121,8 +117,10 @@ pub fn part_two(input: &str) -> Option<u32> {
 
                 if line[0] != "dir" {
                     let size = line[0].parse::<u32>().unwrap();
-                    previous_dir.files.insert(line[1].to_string(), size);
-                    previous_dir.total_file_size = previous_dir.total_file_size + size;
+                    match previous_dir.files.insert(line[1].to_string(), size) {
+                        None => previous_dir.total_file_size = previous_dir.total_file_size + size,
+                        _ => (),
+                    }
                 }
             }
         }
@@ -131,18 +129,12 @@ pub fn part_two(input: &str) -> Option<u32> {
     let mut dir_sizes = recurse_get_size(file_system.directories.get("/").unwrap());
     dir_sizes.sort();
 
-    println!("{:?}", file_system.directories.get("/").unwrap());
-
-    println!("{:?}", dir_sizes);
-
     // There are some wrong values in here.. but might be ok
     let used = dir_sizes.last().unwrap();
-    println!("{:?}", used);
     let unused = 70000000 - used;
-    println!("{:?}", unused);
     let required = 30000000 - unused;
-    println!("{:?}", required);
-    None
+
+    Some(dir_sizes.into_iter().find(|v| *v >= required).unwrap())
 }
 
 #[derive(Debug)]
