@@ -186,19 +186,12 @@ pub fn part_two(input: &str) -> Option<u32> {
     let mut scenic_score = 0;
     for i in 0..grid.len() {
         for j in 0..grid.get(i).unwrap().len() {
-            println!("i: {}, j: {}", i, j);
             let height = grid.get(i).unwrap().get(j).unwrap();
             let element = (i, j);
             let score = view_left(&grid, *height, element)
                 * view_up(&grid, *height, element)
                 * view_right(&grid, *height, element)
                 * view_down(&grid, *height, element);
-            println!("left: {}", view_left(&grid, *height, element));
-            println!("right: {}", view_right(&grid, *height, element));
-            println!("up: {}", view_up(&grid, *height, element));
-            println!("down: {}", view_down(&grid, *height, element));
-            println!("score: {}", &score);
-            println!("");
             if score > scenic_score {
                 scenic_score = score;
             }
